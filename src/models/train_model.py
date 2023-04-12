@@ -2,7 +2,7 @@ import logging
 from typing import Tuple
 import numpy as np
 import torch
-from model import TheAudioBotV2
+from model import TheAudioBotV3
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from torch.utils.data import DataLoader, Dataset
@@ -11,7 +11,6 @@ import sys
 import os
 
 sys.path.insert(0, 'C:/Users/kr_mo/OneDrive-DTU/DTU/Andet/Oticon/AudioBots/')
-
 basedir = 'C:/Users/kr_mo/OneDrive-DTU/DTU/Andet/Oticon/AudioBots/'
 
 seed = 11
@@ -36,8 +35,8 @@ def train() -> None:
 
     torch.manual_seed(seed)
 
-    model = TheAudioBotV2()
-    model_name = "TheAudioBotV2"
+    model = TheAudioBotV3()
+    model_name = "TheAudioBotV3"
 
     checkpoint_callback = ModelCheckpoint(
         dirpath="./models/" + model_name,
@@ -47,7 +46,7 @@ def train() -> None:
 
     early_stopping_callback = EarlyStopping(
         monitor="val_loss",
-        patience=15,
+        patience=50,
         verbose=True,
         mode="min"
     )
@@ -62,15 +61,23 @@ def train() -> None:
     trainer = Trainer(
         devices="auto",
         accelerator=accelerator,
-        max_epochs=50,
-        limit_train_batches=1.0,
+        max_epochs=200,
+        # limit_train_batches=1.0,
         log_every_n_steps=1,
         callbacks=[checkpoint_callback, early_stopping_callback],
         reload_dataloaders_every_n_epochs=1
     )
 
     logging.info(f"device (accelerator): {accelerator}")
-    data_loader = MyDataModule(batch_dict={0: 4, 1: 8, 2: 16, 3: 32, 4: 64})
+    data_loader = MyDataModule(batch_dict={0: 8,
+                                           4: 16,
+                                           8: 24,
+                                           14: 32,
+                                           20: 48,
+                                           28: 64,
+                                           36: 96,
+                                           48: 128})
+
     trainer.fit(model, datamodule=data_loader)
     logging.info("Training complete")
 

@@ -101,7 +101,7 @@ class TheAudioBotV2(TheAudioBotBase):
         self.conv1 = nn.Conv2d(1, 32, kernel_size=(5, 5), stride=(2, 2), padding=(2, 2))
         self.relu1 = nn.ReLU()
         self.bn1 = nn.BatchNorm2d(32)
-        self.drop1 = torch.nn.Dropout2d(p=0.5)
+        self.drop1 = torch.nn.Dropout2d(p=0.4)
         nn.init.kaiming_normal_(self.conv1.weight, a=0.1)
         self.conv1.bias.data.zero_()
         conv_layers += [self.conv1, self.relu1, self.bn1, self.drop1]
@@ -110,7 +110,7 @@ class TheAudioBotV2(TheAudioBotBase):
         self.conv2 = nn.Conv2d(32, 64, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
         self.relu2 = nn.ReLU()
         self.bn2 = nn.BatchNorm2d(64)
-        self.drop2 = torch.nn.Dropout2d(p=0.4)
+        self.drop2 = torch.nn.Dropout2d(p=0.3)
         nn.init.kaiming_normal_(self.conv2.weight, a=0.1)
         self.conv2.bias.data.zero_()
         conv_layers += [self.conv2, self.relu2, self.bn2, self.drop2]
@@ -119,7 +119,7 @@ class TheAudioBotV2(TheAudioBotBase):
         self.conv3 = nn.Conv2d(64, 128, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
         self.relu3 = nn.ReLU()
         self.bn3 = nn.BatchNorm2d(128)
-        self.drop3 = torch.nn.Dropout2d(p=0.3)
+        self.drop3 = torch.nn.Dropout2d(p=0.2)
         nn.init.kaiming_normal_(self.conv3.weight, a=0.1)
         self.conv3.bias.data.zero_()
         conv_layers += [self.conv3, self.relu3, self.bn3, self.drop3]
@@ -143,9 +143,62 @@ class TheAudioBotV2(TheAudioBotBase):
         self.conv = nn.Sequential(*conv_layers)
 
 
+class TheAudioBotV3(TheAudioBotBase):
+    def __init__(self):
+        super().__init__()
+        conv_layers = []
+
+        # First Convolution Block with Relu and Batch Norm. Use Kaiming Initialization
+        self.conv1 = nn.Conv2d(1, 32, kernel_size=(5, 5), stride=(2, 2), padding=(2, 2))
+        self.relu1 = nn.ReLU()
+        self.bn1 = nn.BatchNorm2d(32)
+        self.drop1 = torch.nn.Dropout2d(p=0.4)
+        nn.init.kaiming_normal_(self.conv1.weight, a=0.1)
+        self.conv1.bias.data.zero_()
+        conv_layers += [self.conv1, self.relu1, self.bn1, self.drop1]
+
+        # Second Convolution Block
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=(5, 5), stride=(2, 2), padding=(2, 2))
+        self.relu2 = nn.ReLU()
+        self.bn2 = nn.BatchNorm2d(64)
+        self.drop2 = torch.nn.Dropout2d(p=0.3)
+        nn.init.kaiming_normal_(self.conv2.weight, a=0.1)
+        self.conv2.bias.data.zero_()
+        conv_layers += [self.conv2, self.relu2, self.bn2, self.drop2]
+
+        # Second Convolution Block
+        self.conv3 = nn.Conv2d(64, 128, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+        self.relu3 = nn.ReLU()
+        self.bn3 = nn.BatchNorm2d(128)
+        self.drop3 = torch.nn.Dropout2d(p=0.3)
+        nn.init.kaiming_normal_(self.conv3.weight, a=0.1)
+        self.conv3.bias.data.zero_()
+        conv_layers += [self.conv3, self.relu3, self.bn3, self.drop3]
+
+        # Second Convolution Block
+        self.conv4 = nn.Conv2d(128, 256, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+        self.relu4 = nn.ReLU()
+        self.bn4 = nn.BatchNorm2d(256)
+        self.drop4 = torch.nn.Dropout2d(p=0.3)
+        nn.init.kaiming_normal_(self.conv4.weight, a=0.1)
+        self.conv4.bias.data.zero_()
+        conv_layers += [self.conv4, self.relu4, self.bn4, self.drop4]
+
+        # Linear Classifier
+        self.ap = nn.AdaptiveAvgPool2d(output_size=1)
+        self.lin = nn.Sequential(nn.Linear(in_features=256, out_features=200),
+                                 nn.ReLU(),
+                                 nn.Linear(in_features=200, out_features=128),
+                                 nn.ReLU(),
+                                 nn.Linear(in_features=128, out_features=5))
+
+        # Wrap the Convolutional Blocks
+        self.conv = nn.Sequential(*conv_layers)
+
+
 if __name__ == "__main__":
     # Create the model and put it on the GPU if available
-    myModel = TheAudioBotV2()
+    myModel = TheAudioBotV3()
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     myModel = myModel.to(device)
     # Check that it is on Cuda
