@@ -3,7 +3,7 @@ import pickle
 import click
 import torch
 from torch.utils.data import DataLoader, Dataset
-from model import TheAudioBot
+from model import TheAudioBotV2
 from tqdm import tqdm
 import numpy as np
 import sys
@@ -40,7 +40,7 @@ def evaluate(model_filepath, test_filepath):
 
     # model.load_state_dict(torch.load(model_filepath))
 
-    model = TheAudioBot.load_from_checkpoint(model_filepath)
+    model = TheAudioBotV2.load_from_checkpoint(model_filepath)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = model.to(device)
     model.eval()

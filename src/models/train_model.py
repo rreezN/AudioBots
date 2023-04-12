@@ -1,15 +1,12 @@
 import logging
-import pickle
 from typing import Tuple
-import wandb
 import numpy as np
-import hydra
 import torch
-from model import TheAudioBot
+from model import TheAudioBotV2
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
-from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader, Dataset
+from dataloader import MyDataModule
 import sys
 import os
 
@@ -35,30 +32,22 @@ class dataset(Dataset):
 
 # @hydra.main(version_base=None, config_path="config", config_name="config.yaml")
 def train() -> None:
-    # log.info("Training day and night")
-    print("Training model")
+    logging.info("Training model")
 
-    # model_hparams = cfg.model
-    # train_hparams = cfg.training
-
-    # print(cfg.training)
-
-    # log.info("lr:", train_hparams.hyperparameters.lr)
-    # log.info("batch size:", train_hparams.hyperparameters.batch_size)
-    # torch.manual_seed(train_hparams.hyperparameters.seed)
     torch.manual_seed(seed)
 
-    model = TheAudioBot()
+    model = TheAudioBotV2()
+    model_name = "TheAudioBotV2"
 
     checkpoint_callback = ModelCheckpoint(
-        dirpath="./models",
-        monitor="train_loss",
+        dirpath="./models/" + model_name,
+        monitor="val_loss",
         mode="min"
     )
 
     early_stopping_callback = EarlyStopping(
-        monitor="train_loss",
-        patience=10,
+        monitor="val_loss",
+        patience=15,
         verbose=True,
         mode="min"
     )
@@ -78,54 +67,12 @@ def train() -> None:
         log_every_n_steps=1,
         callbacks=[checkpoint_callback, early_stopping_callback],
         reload_dataloaders_every_n_epochs=1
-        # precision="bf16"
-    )
-    # trainer = Trainer(
-    #     devices="auto",
-    #     accelerator=accelerator,
-    #     max_epochs=train_hparams.hyperparameters.epochs,
-    #     limit_train_batches=train_hparams.hyperparameters.limit_train_batches,
-    #     log_every_n_steps=1,
-    #     callbacks=[checkpoint_callback, early_stopping_callback],
-    #     logger=wandb_logger,
-    #     reload_dataloaders_every_n_epochs=1
-    #     # precision="bf16"
-    # )
-
-    # log.info(f"device (accelerator): {accelerator}")
-    log.info(f"device (accelerator): {accelerator}")
-
-    train_data = torch.unsqueeze(torch.tensor(np.load(os.path.join(basedir, "data/processed/training.npy")), dtype=torch.float32), 1)
-    train_labels = torch.tensor(np.load(os.path.join(basedir, "data/processed/training_labels.npy"))).long()
-
-    train_data = dataset(train_data, train_labels)
-    # train_data = dataset(train_image_data, train_images_labels.long())
-    # train_loader = DataLoader(
-    #     train_data,
-    #     batch_size=train_hparams.hyperparameters.batch_size,
-    #     num_workers=train_hparams.hyperparameters.num_workers,
-    #     shuffle=True
-    # )
-    train_loader = DataLoader(
-        train_data,
-        batch_size=16,
-        num_workers=1,
-        shuffle=True
     )
 
-    val_data = torch.unsqueeze(torch.tensor(np.load(os.path.join(basedir, "data/processed/val.npy")), dtype=torch.float32), 1)
-    val_labels = torch.tensor(np.load(os.path.join(basedir, "data/processed/val_labels.npy"))).long()
-
-    val_data = dataset(val_data, val_labels.long())
-    val_loader = DataLoader(
-        val_data,
-        batch_size=16,
-        num_workers=1
-    )
-
-    trainer.fit(model, train_dataloaders=train_loader,
-                val_dataloaders=val_loader)
-    # torch.save(model, f"{os.getcwd()}/trained_model.pt")
+    logging.info(f"device (accelerator): {accelerator}")
+    data_loader = MyDataModule(batch_dict={0: 4, 1: 8, 2: 16, 3: 32, 4: 64})
+    trainer.fit(model, datamodule=data_loader)
+    logging.info("Training complete")
 
 
 if __name__ == "__main__":
