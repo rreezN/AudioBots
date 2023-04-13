@@ -10,12 +10,9 @@ from dataloader import MyDataModule
 import sys
 import os
 
-sys.path.insert(0, 'C:/Users/kr_mo/OneDrive-DTU/DTU/Andet/Oticon/AudioBots/')
-basedir = 'C:/Users/kr_mo/OneDrive-DTU/DTU/Andet/Oticon/AudioBots/'
 
 seed = 11
 # wandb.login(key='5b7c4dfaaa3458ff59ee371774798a737933dfa9')
-
 
 class dataset(Dataset):
     def __init__(self, images: torch.Tensor, labels: torch.Tensor) -> None:
@@ -30,7 +27,12 @@ class dataset(Dataset):
 
 
 # @hydra.main(version_base=None, config_path="config", config_name="config.yaml")
+# @click.command()
+# @click.argument('input_filepath', type=click.Path(exists=True))
 def train() -> None:
+    # sys.path.insert(0, 'C:/Users/kr_mo/OneDrive-DTU/DTU/Andet/Oticon/AudioBots/')
+    # basedir = 'C:/Users/kr_mo/OneDrive-DTU/DTU/Andet/Oticon/AudioBots/'
+
     logging.info("Training model")
 
     torch.manual_seed(seed)
@@ -61,8 +63,8 @@ def train() -> None:
     trainer = Trainer(
         devices="auto",
         accelerator=accelerator,
-        max_epochs=200,
-        # limit_train_batches=1.0,
+        max_epochs=1,
+        limit_train_batches=0.1,
         log_every_n_steps=1,
         callbacks=[checkpoint_callback, early_stopping_callback],
         reload_dataloaders_every_n_epochs=1
@@ -79,7 +81,9 @@ def train() -> None:
                                            48: 128})
 
     trainer.fit(model, datamodule=data_loader)
-    logging.info("Training complete")
+    logging.info("Training complete! Now testing model...")
+    trainer.test(model, datamodule=data_loader)
+    logging.info("Testing Complete!")
 
 
 if __name__ == "__main__":

@@ -40,6 +40,16 @@ class TheAudioBotBase(LightningModule):
         self.log('val_acc', acc, on_step=False, on_epoch=True, prog_bar=True, logger=True)
         return acc
 
+    def test_step(self, batch, batch_idx):
+        x, y = batch
+        y_hat = self.forward(x)
+        loss = F.cross_entropy(y_hat, y)
+        self.log('test_loss', loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        pred = torch.argmax(y_hat, dim=1)
+        acc = torch.sum(pred == y).item() / (len(y) * 1.0)
+        self.log('test_acc', acc, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        return acc
+
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5,

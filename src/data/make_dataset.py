@@ -21,10 +21,10 @@ def main(input_filepath, output_filepath):
     # Split your data and labels into a training set and a temporary set that will later be split into a validation
     # and testing set
     train_data_temp, test_data, train_labels_temp, test_labels = train_test_split(X, y, test_size=0.1,
-                                                                                  random_state=42)
+                                                                                  random_state=42, shuffle=True)
     # Split the temporary set into a validation set and a final testing set
     train_data, val_data, train_labels, val_labels = train_test_split(train_data_temp, train_labels_temp,
-                                                                      test_size=0.111, random_state=42)
+                                                                      test_size=0.111, random_state=42, shuffle=True)
 
     # Print the sizes of each set
     print(f"Training set size: {len(train_data)}")
