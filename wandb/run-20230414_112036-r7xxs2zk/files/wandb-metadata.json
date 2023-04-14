@@ -1,0 +1,50 @@
+{
+    "os": "Windows-10-10.0.19045-SP0",
+    "python": "3.10.9",
+    "heartbeatAt": "2023-04-14T09:20:36.851651",
+    "startedAt": "2023-04-14T09:20:36.106975",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "C:\\Users\\kr_mo\\OneDrive-DTU\\DTU\\Andet\\Oticon\\AudioBots\\src\\models\\train_model.py",
+    "codePath": "src\\models\\train_model.py",
+    "git": {
+        "remote": "https://github.com/rreezN/AudioBots.git",
+        "commit": "79832f1a6795a83a9e255b083e83b20d3daa6bcb"
+    },
+    "email": "kr_moellmann@hotmail.com",
+    "root": "C:/Users/kr_mo/OneDrive-DTU/DTU/Andet/Oticon/AudioBots",
+    "host": "DESKTOP-QA9V1U8",
+    "username": "kr_mo",
+    "executable": "C:\\Users\\kr_mo\\AppData\\Local\\Programs\\Python\\Python310\\python.exe",
+    "cpu_count": 6,
+    "cpu_count_logical": 12,
+    "cpu_freq": {
+        "current": 4200.0,
+        "min": 0.0,
+        "max": 4200.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 4200.0,
+            "min": 0.0,
+            "max": 4200.0
+        }
+    ],
+    "disk": {
+        "total": 930.8720855712891,
+        "used": 157.3200798034668
+    },
+    "gpu": "NVIDIA GeForce RTX 2070 SUPER",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA GeForce RTX 2070 SUPER",
+            "memory_total": 8589934592
+        }
+    ],
+    "memory": {
+        "total": 31.91196060180664
+    }
+}

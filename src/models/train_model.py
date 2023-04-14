@@ -5,7 +5,7 @@ import torch
 from model import TheAudioBotV3
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 from dataloader import MyDataModule
 import getpass
 import wandb
@@ -27,7 +27,7 @@ PARAMS = {
                    36: 96,
                    48: 128},
     "accelerator": "gpu" if torch.cuda.is_available() else "cpu",
-    "limit_train_batches": 0.1
+    "limit_train_batches": 1.0
 }
 
 random.seed(PARAMS["seed"])
@@ -36,19 +36,8 @@ np.random.seed(PARAMS["seed"])
 
 if getpass.getuser() == 'denni':
     wandb.login(key='5b7c4dfaaa3458ff59ee371774798a737933dfa9')
-else:
-    print("Not logged in to wandb. Please use your own key.")
-
-class dataset(Dataset):
-    def __init__(self, images: torch.Tensor, labels: torch.Tensor) -> None:
-        self.data = images
-        self.labels = labels
-
-    def __getitem__(self, item: int) -> Tuple[torch.Tensor, torch.Tensor]:
-        return self.data[item].float(), self.labels[item]
-
-    def __len__(self) -> int:
-        return len(self.data)
+# else:
+#     print("Not logged in to wandb. Please use your own key.")
 
 
 def train() -> None:
@@ -92,7 +81,6 @@ def train() -> None:
 
     trainer.fit(model, datamodule=data_loader)
     trainer.test(model, datamodule=data_loader)
-
 
 
 if __name__ == "__main__":

@@ -1,0 +1,17 @@
+program: train.py
+method: grid
+metric:
+  name: val_loss
+  goal: minimize
+parameters:
+    learning_rate:
+      min: 0.0001
+      max: 0.1
+    optimizer:
+      values: ["adam", "sgd"]
+    loss_function:
+      values: ["cross_entropy", "focal_loss"]
+    activation_function:
+      values: ["ReLU", "LeakyReLU", "ELU"]
+    dropout:
+      values: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]

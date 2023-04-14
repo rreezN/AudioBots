@@ -1,0 +1,99 @@
+wandb_version: 1
+
+_wandb:
+  desc: null
+  value:
+    python_version: 3.10.9
+    cli_version: 0.14.2
+    framework: lightning
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    start_time: 1681464036.127994
+    t:
+      1:
+      - 1
+      - 9
+      - 41
+      - 55
+      2:
+      - 1
+      - 9
+      - 41
+      - 55
+      3:
+      - 7
+      - 19
+      - 23
+      4: 3.10.9
+      5: 0.14.2
+      8:
+      - 3
+      - 5
+    m:
+    - 1: trainer/global_step
+      6:
+      - 3
+    - 1: val_loss
+      5: 1
+      6:
+      - 1
+    - 1: val_acc
+      5: 1
+      6:
+      - 1
+    - 1: epoch
+      5: 1
+      6:
+      - 1
+    - 1: train_loss
+      5: 1
+      6:
+      - 1
+    - 1: test_loss
+      5: 1
+      6:
+      - 1
+    - 1: test_acc
+      5: 1
+      6:
+      - 1
+model_name:
+  desc: null
+  value: TheAudioBotV3
+project_name:
+  desc: null
+  value: Getting Started
+seed:
+  desc: null
+  value: 11
+num_epochs:
+  desc: null
+  value: 5
+patience:
+  desc: null
+  value: 50
+batch_dict:
+  desc: null
+  value:
+  - - 0
+    - 8
+  - - 4
+    - 16
+  - - 8
+    - 24
+  - - 14
+    - 32
+  - - 20
+    - 48
+  - - 28
+    - 64
+  - - 36
+    - 96
+  - - 48
+    - 128
+accelerator:
+  desc: null
+  value: gpu
+limit_train_batches:
+  desc: null
+  value: 1.0
