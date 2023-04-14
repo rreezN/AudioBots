@@ -7,12 +7,37 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from torch.utils.data import DataLoader, Dataset
 from dataloader import MyDataModule
-import sys
-import os
+import getpass
+import wandb
+import random
+from pytorch_lightning.loggers import WandbLogger
 
+PARAMS = {
+    "model_name": "TheAudioBotV3",
+    "project_name": "Getting Started",
+    "seed": 11,
+    "num_epochs": 5,
+    "patience": 50,
+    "batch_dict": {0: 8,
+                   4: 16,
+                   8: 24,
+                   14: 32,
+                   20: 48,
+                   28: 64,
+                   36: 96,
+                   48: 128},
+    "accelerator": "gpu" if torch.cuda.is_available() else "cpu",
+    "limit_train_batches": 0.1
+}
 
-seed = 11
-# wandb.login(key='5b7c4dfaaa3458ff59ee371774798a737933dfa9')
+random.seed(PARAMS["seed"])
+torch.manual_seed(PARAMS["seed"])
+np.random.seed(PARAMS["seed"])
+
+if getpass.getuser() == 'denni':
+    wandb.login(key='5b7c4dfaaa3458ff59ee371774798a737933dfa9')
+else:
+    print("Not logged in to wandb. Please use your own key.")
 
 class dataset(Dataset):
     def __init__(self, images: torch.Tensor, labels: torch.Tensor) -> None:
@@ -26,64 +51,48 @@ class dataset(Dataset):
         return len(self.data)
 
 
-# @hydra.main(version_base=None, config_path="config", config_name="config.yaml")
-# @click.command()
-# @click.argument('input_filepath', type=click.Path(exists=True))
 def train() -> None:
-    # sys.path.insert(0, 'C:/Users/kr_mo/OneDrive-DTU/DTU/Andet/Oticon/AudioBots/')
-    # basedir = 'C:/Users/kr_mo/OneDrive-DTU/DTU/Andet/Oticon/AudioBots/'
-
-    logging.info("Training model")
-
-    torch.manual_seed(seed)
-
     model = TheAudioBotV3()
-    model_name = "TheAudioBotV3"
-
     checkpoint_callback = ModelCheckpoint(
-        dirpath="./models/" + model_name,
+        dirpath="./models/" + PARAMS["model_name"],
         monitor="val_loss",
         mode="min"
     )
 
     early_stopping_callback = EarlyStopping(
         monitor="val_loss",
-        patience=50,
+        patience=PARAMS["patience"],
         verbose=True,
         mode="min"
     )
-    # accelerator = "gpu" if train_hparams.hyperparameters.cuda else "cpu"
-    accelerator = "gpu" if torch.cuda.is_available() else "cpu"
 
-    # wandb_logger = WandbLogger(
-    #     project="Final-Project", entity="dtu-mlopsproject", log_model="all"
-    # )
-    # for key, val in train_hparams.hyperparameters.items():
-    #     wandb_logger.experiment.config[key] = val
-    trainer = Trainer(
-        devices="auto",
-        accelerator=accelerator,
-        max_epochs=1,
-        limit_train_batches=0.1,
-        log_every_n_steps=1,
-        callbacks=[checkpoint_callback, early_stopping_callback],
-        reload_dataloaders_every_n_epochs=1
+    wandb_logger = WandbLogger(
+        project=PARAMS["project_name"], entity="audiobots", log_model="all"
     )
 
-    logging.info(f"device (accelerator): {accelerator}")
-    data_loader = MyDataModule(batch_dict={0: 8,
-                                           4: 16,
-                                           8: 24,
-                                           14: 32,
-                                           20: 48,
-                                           28: 64,
-                                           36: 96,
-                                           48: 128})
+    for key, val in PARAMS.items():
+        if key == 'batch_dict':
+            wandb_logger.experiment.config[key] = [(key_, val_) for key_, val_ in val.items()]
+        else:
+            wandb_logger.experiment.config[key] = val
+
+
+    trainer = Trainer(
+        devices="auto",
+        accelerator=PARAMS["accelerator"],
+        max_epochs=PARAMS["num_epochs"],
+        limit_train_batches=PARAMS["limit_train_batches"],
+        log_every_n_steps=1,
+        callbacks=[checkpoint_callback, early_stopping_callback],
+        reload_dataloaders_every_n_epochs=1,
+        logger=wandb_logger
+    )
+
+    data_loader = MyDataModule(batch_dict=PARAMS["batch_dict"])
 
     trainer.fit(model, datamodule=data_loader)
-    logging.info("Training complete! Now testing model...")
     trainer.test(model, datamodule=data_loader)
-    logging.info("Testing Complete!")
+
 
 
 if __name__ == "__main__":

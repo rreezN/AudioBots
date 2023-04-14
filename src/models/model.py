@@ -12,6 +12,7 @@ import torch
 class TheAudioBotBase(LightningModule):
     def __init__(self):
         super().__init__()
+        self.save_hyperparameters()
         self.conv = None
         self.ap = None
         self.lin = None
