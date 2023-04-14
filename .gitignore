@@ -79,6 +79,7 @@ target/
 /data/
 /lightning_logs/
 /wandb/
+/models/
 
 # Mac OS-specific storage files
 .DS_Store

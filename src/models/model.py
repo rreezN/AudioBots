@@ -12,6 +12,9 @@ focal_loss = torch.hub.load(
     force_reload=False
 )
 
+device = "cuda" if torch.cuda.is_available() else "cpu"
+focal_loss = focal_loss.to(device)
+
 
 # ----------------------------
 # Audio Classification Model
@@ -76,14 +79,14 @@ class TheAudioBotBase(LightningModule):
         if self.optimizer_type == 'adam':
             optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         elif self.optimizer_type == 'sgd':
-            optimizer = torch.optim.SGD(self.parameters(), lr=self.lr)  # , momentum=0.9
+            optimizer = torch.optim.SGD(self.parameters(), lr=self.lr, momentum=0.9)
         elif self.optimizer_type == 'rmsprop':
             optimizer = torch.optim.RMSprop(self.parameters(), lr=self.lr)
         else:
             raise ValueError("Optimizer type not implemented.")
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5,
                                                                min_lr=1e-6, verbose=True)
-        return {'optimizer': optimizer, 'lr_scheduler': scheduler, 'monitor': 'train_loss'}
+        return {'optimizer': optimizer, 'lr_scheduler': scheduler, 'monitor': 'val_loss'}
 
     def loss_func(self, y_hat, y):
         if self.loss_function == "cross_entropy":
@@ -236,7 +239,7 @@ class TheAudioBotV3(TheAudioBotBase):
         self.drop4 = torch.nn.Dropout2d(p=self.dropout)
         nn.init.kaiming_normal_(self.conv4.weight, a=0.1)
         self.conv4.bias.data.zero_()
-        conv_layers += [self.conv4, self.relu4, self.bn4, self.drop4]
+        conv_layers += [self.conv4, self.relu4,  self.bn4, self.drop4]
 
         # Linear Classifier
         self.ap = nn.AdaptiveAvgPool2d(output_size=1)

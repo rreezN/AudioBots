@@ -32,8 +32,8 @@ class MyDataModule(pl.LightningDataModule):
     def setup(self, stage=None):
         # Assign train/val/test datasets for use in dataloaders
 
-        train_data = torch.unsqueeze(torch.tensor(np.load("data/processed/training.npy"), dtype=torch.float32), 1).to(self.device)
-        train_labels = torch.tensor(np.load("data/processed/training_labels.npy")).long().to(self.device)
+        train_data = torch.unsqueeze(torch.tensor(np.load("data/processed/training.npy"), dtype=torch.float32), 1)
+        train_labels = torch.tensor(np.load("data/processed/training_labels.npy")).long()
         
         # Standardisation parameters
         mu = torch.mean(train_data, axis=(0,1,3))
@@ -45,15 +45,15 @@ class MyDataModule(pl.LightningDataModule):
 
         # Standardise val data
         val_data = torch.unsqueeze(
-            torch.tensor(np.load("data/processed/val.npy"), dtype=torch.float32), 1).to(self.device)
-        val_labels = torch.tensor(np.load("data/processed/val_labels.npy")).long().to(self.device)
+            torch.tensor(np.load("data/processed/val.npy"), dtype=torch.float32), 1)
+        val_labels = torch.tensor(np.load("data/processed/val_labels.npy")).long()
         val_data = standardiseTransform(val_data, mu, std)
         self.val_data = dataset(val_data, val_labels.long())
 
         # Standardise test data
         test_data = torch.unsqueeze(
-            torch.tensor(np.load("data/processed/test.npy"), dtype=torch.float32), 1).to(self.device)
-        test_labels = torch.tensor(np.load("data/processed/test_labels.npy")).long().to(self.device)
+            torch.tensor(np.load("data/processed/test.npy"), dtype=torch.float32), 1)
+        test_labels = torch.tensor(np.load("data/processed/test_labels.npy")).long()
         test_data = standardiseTransform(test_data, mu, std)
         self.test_data = dataset(test_data, test_labels.long())
 
