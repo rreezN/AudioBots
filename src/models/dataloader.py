@@ -1,13 +1,13 @@
 from torch.utils.data import DataLoader, Dataset
 import pytorch_lightning as pl
 import torch
-from torchvision import transforms
 import numpy as np
-import os
+
 
 def standardiseTransform(data, mean, std):
     # Standardise data
     return (data - mean.view(1, 1, 32, 1)) / std.view(1, 1, 32, 1)
+
 
 class dataset(Dataset):
     def __init__(self, data: torch.Tensor, labels: torch.Tensor) -> None:
@@ -20,18 +20,20 @@ class dataset(Dataset):
     def __len__(self) -> int:
         return len(self.data)
 
+
 class MyDataModule(pl.LightningDataModule):
-    def __init__(self, batch_dict):
+    def __init__(self, batch_dict, device):
         super().__init__()
         # batch_dict contains the batch scheduling
         self.batch_dict = batch_dict
         self.current_batch_size = batch_dict[0]
+        self.device = "cuda" if device == "gpu" else "cpu"
 
     def setup(self, stage=None):
         # Assign train/val/test datasets for use in dataloaders
 
-        train_data = torch.unsqueeze(torch.tensor(np.load("data/processed/training.npy"), dtype=torch.float32), 1)
-        train_labels = torch.tensor(np.load("data/processed/training_labels.npy")).long()
+        train_data = torch.unsqueeze(torch.tensor(np.load("data/processed/training.npy"), dtype=torch.float32), 1).to(self.device)
+        train_labels = torch.tensor(np.load("data/processed/training_labels.npy")).long().to(self.device)
         
         # Standardisation parameters
         mu = torch.mean(train_data, axis=(0,1,3))
@@ -43,15 +45,15 @@ class MyDataModule(pl.LightningDataModule):
 
         # Standardise val data
         val_data = torch.unsqueeze(
-            torch.tensor(np.load("data/processed/val.npy"), dtype=torch.float32), 1)
-        val_labels = torch.tensor(np.load("data/processed/val_labels.npy")).long()
+            torch.tensor(np.load("data/processed/val.npy"), dtype=torch.float32), 1).to(self.device)
+        val_labels = torch.tensor(np.load("data/processed/val_labels.npy")).long().to(self.device)
         val_data = standardiseTransform(val_data, mu, std)
         self.val_data = dataset(val_data, val_labels.long())
 
         # Standardise test data
         test_data = torch.unsqueeze(
-            torch.tensor(np.load("data/processed/test.npy"), dtype=torch.float32), 1)
-        test_labels = torch.tensor(np.load("data/processed/test_labels.npy")).long()
+            torch.tensor(np.load("data/processed/test.npy"), dtype=torch.float32), 1).to(self.device)
+        test_labels = torch.tensor(np.load("data/processed/test_labels.npy")).long().to(self.device)
         test_data = standardiseTransform(test_data, mu, std)
         self.test_data = dataset(test_data, test_labels.long())
 

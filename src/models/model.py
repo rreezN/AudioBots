@@ -53,8 +53,8 @@ class TheAudioBotBase(LightningModule):
         acc = torch.sum(pred == y).item() / (len(y) * 1.0)
         self.log('val_acc', acc, on_step=False, on_epoch=True, prog_bar=True, logger=True)
         return acc
-
-    def validation_epoch_end(self, outputs):
+    
+    def on_validation_epoch_end(self):
         # check if the validation accuracy exceeds your threshold
         if self.trainer.current_epoch >= 20 and self.trainer.logged_metrics['val_acc'] < 0.80:
             # if the accuracy is below 0.9 after 5 epochs, stop the training early
