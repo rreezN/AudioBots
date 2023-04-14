@@ -54,6 +54,14 @@ class TheAudioBotBase(LightningModule):
         self.log('val_acc', acc, on_step=False, on_epoch=True, prog_bar=True, logger=True)
         return acc
 
+    def validation_epoch_end(self, outputs):
+        # check if the validation accuracy exceeds your threshold
+        if self.trainer.current_epoch >= 20 and self.trainer.logged_metrics['val_acc'] < 0.80:
+            # if the accuracy is below 0.9 after 5 epochs, stop the training early
+            self.log('early_stop', True)
+            self.logger.experiment.finish()
+            self.trainer.should_stop = True
+
     def test_step(self, batch, batch_idx):
         x, y = batch
         y_hat = self.forward(x)
