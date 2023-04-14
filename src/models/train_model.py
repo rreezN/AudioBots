@@ -1,23 +1,22 @@
-import logging
-from typing import Tuple
 import numpy as np
 import torch
 from model import TheAudioBotV3
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
-from torch.utils.data import DataLoader
 from dataloader import MyDataModule
 import getpass
 import wandb
 import random
+import yaml
+from typing import Dict, Any
 from pytorch_lightning.loggers import WandbLogger
 
 PARAMS = {
     "model_name": "TheAudioBotV3",
-    "project_name": "Getting Started",
+    "project_name": "Sweeping",
     "seed": 11,
-    "num_epochs": 5,
-    "patience": 50,
+    "num_epochs": 150,
+    "patience": 30,
     "batch_dict": {0: 8,
                    4: 16,
                    8: 24,
@@ -40,8 +39,13 @@ if getpass.getuser() == 'denni':
 #     print("Not logged in to wandb. Please use your own key.")
 
 
-def train() -> None:
-    model = TheAudioBotV3()
+def train(hparams: Dict[str, Any]) -> None:
+    model = TheAudioBotV3(lr=hparams["learning_rate"],
+                          optimizer=hparams["optimizer"],
+                          loss_function=hparams["loss_function"],
+                          activation_function=hparams["activation_function"],
+                          dropout=hparams["dropout"])
+
     checkpoint_callback = ModelCheckpoint(
         dirpath="./models/" + PARAMS["model_name"],
         monitor="val_loss",
@@ -65,7 +69,6 @@ def train() -> None:
         else:
             wandb_logger.experiment.config[key] = val
 
-
     trainer = Trainer(
         devices="auto",
         accelerator=PARAMS["accelerator"],
@@ -83,5 +86,19 @@ def train() -> None:
     trainer.test(model, datamodule=data_loader)
 
 
+def train_sweep() -> None:
+    with open('./sweep.yaml') as file:
+        sweep_config = yaml.load(file, Loader=yaml.FullLoader)
+
+    sweep_id = wandb.sweep(sweep=sweep_config, project=PARAMS["project_name"], entity="audiobots")
+
+    def sweep_run() -> None:
+        with wandb.init() as run:
+            hparams = {**run.config}  # **DEFAULT_PARAMS,
+            train(hparams)
+
+    wandb.agent(sweep_id, function=sweep_run, count=None)
+
+
 if __name__ == "__main__":
-    train()
+    train_sweep()

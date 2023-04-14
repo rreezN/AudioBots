@@ -1,7 +1,5 @@
 import torch.nn.functional as F
 from pytorch_lightning import LightningModule
-from torch.utils.data import DataLoader
-from torch.nn import init
 import torch.nn as nn
 import torch
 
@@ -21,7 +19,7 @@ focal_loss = torch.hub.load(
 class TheAudioBotBase(LightningModule):
     def __init__(self,
                  lr: float = 1e-3,
-                 optimiser: str = "adam",
+                 optimizer: str = "adam",
                  loss_function: str = "cross_entropy"):
         super().__init__()
         self.save_hyperparameters()
@@ -29,7 +27,7 @@ class TheAudioBotBase(LightningModule):
         self.ap = None
         self.lin = None
         self.lr = lr
-        self.optimiser_type = optimiser
+        self.optimizer_type = optimizer
         self.loss_function = loss_function
 
     def forward(self, x):
@@ -187,11 +185,11 @@ class TheAudioBotV2(TheAudioBotBase):
 class TheAudioBotV3(TheAudioBotBase):
     def __init__(self,
                  lr: float = 1e-3,
-                 optimiser: str = "adam",
+                 optimizer: str = "adam",
                  loss_function: str = "cross_entropy",
                  activation_function: str = "ReLU",
                  dropout: float = 0.4):
-        super().__init__(lr=lr, optimiser=optimiser, loss_function=loss_function)
+        super().__init__(lr=lr, optimizer=optimizer, loss_function=loss_function)
         self.activation_function = activation_function
         self.dropout = dropout
         conv_layers = []
