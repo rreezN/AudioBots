@@ -1,19 +1,16 @@
 import torch.nn.functional as F
 from pytorch_lightning import LightningModule
+from focal_loss import FocalLoss
 import torch.nn as nn
 import torch
 import random
 import torchaudio
-import torchvision
 
-
-focal_loss = torch.hub.load(
-    'adeelh/pytorch-multi-class-focal-loss',
-    model='FocalLoss',
+# Load the model
+focal_loss = FocalLoss(
     alpha=torch.tensor([.73, .48, .91, .92, .97]),
     gamma=2,
-    reduction='mean',
-    force_reload=False
+    reduction='mean'
 )
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -29,12 +26,7 @@ class SpectrogramAugmentation(LightningModule):
         self.p_noise = p_noise
 
     def forward(self, x):
-        batch_size, channels, height, width = x.shape
-        #assert (batch_size, channels, height, width) == (8, 1, 32, 96), "Input size should be (8, 1, 32, 96)"
         probs = [random.random() for _ in range(4)]
-        #for idx in range(batch_size):
-        #    x[idx] = self.apply_augmentation(x[idx], probs)
-
         if probs[0] < self.p_time_shift:
             x = self.time_shift(x)
         if probs[1] < self.p_freq_shift:
@@ -43,7 +35,7 @@ class SpectrogramAugmentation(LightningModule):
             x = self.time_stretch(x)
         if probs[3] < self.p_noise:
             x = self.add_noise(x)
-        x.to(device)
+        x = x.to(device)
         return x
 
     def time_shift(self, x):
@@ -56,9 +48,10 @@ class SpectrogramAugmentation(LightningModule):
         
     def time_stretch(self, x):
         stretch_factor = random.uniform(0.8, 1.2)
-        x = x.unsqueeze(0)
+        orig_device = x.device
+        x = x.unsqueeze(0).cpu()
         x = torchaudio.transforms.TimeStretch(hop_length=None, n_freq=x.shape[-2], fixed_rate=stretch_factor)(x).float()
-        x = x.squeeze(0)
+        x = x.squeeze(0).to(orig_device)
         return x
 
     def add_noise(self, x):
@@ -99,13 +92,6 @@ class TheAudioBotBase(LightningModule):
         loss = self.loss_func(y_hat, y)
         self.log('train_loss', loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
         return loss
-
-    # def training_step(self, batch, batch_idx):
-    #     x, y = batch
-    #     y_hat = self.forward(x)
-    #     loss = self.loss_func(y_hat, y)
-    #     self.log('train_loss', loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
-    #     return loss
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
