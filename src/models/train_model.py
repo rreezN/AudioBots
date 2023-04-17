@@ -13,7 +13,7 @@ from pytorch_lightning.loggers import WandbLogger
 
 PARAMS = {
     "model_name": "TheAudioBotV3",
-    "project_name": "Sweeping",
+    "project_name": "Find good model yes",
     "seed": 11,
     "num_epochs": 150,
     "patience": 30,
@@ -101,10 +101,10 @@ def train_sweep() -> None:
 
 
 if __name__ == "__main__":
-    # train_sweep()
-    hparams = {"learning_rate": 1e-3,
-               "optimizer": "adam",
-               "loss_function": "cross_entropy",
-               "activation_function": "ReLU",
-               "dropout": 0.3}
-    train(hparams)
+    train_sweep()
+    # hparams = {"learning_rate": 1e-3,
+    #            "optimizer": "adam",
+    #            "loss_function": "cross_entropy",
+    #            "activation_function": "ReLU",
+    #            "dropout": 0.3}
+    # train(hparams)
