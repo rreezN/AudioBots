@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch
 import random
 import torchaudio
+import torchvision
 
 
 focal_loss = torch.hub.load(
@@ -17,6 +18,53 @@ focal_loss = torch.hub.load(
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 focal_loss = focal_loss.to(device)
+
+
+class SpectrogramAugmentation(LightningModule):
+    def __init__(self, p_time_shift=0.2, p_freq_shift=0.2, p_time_stretch=0.2, p_noise=0.2):
+        super().__init__()
+        self.p_time_shift = p_time_shift
+        self.p_freq_shift = p_freq_shift
+        self.p_time_stretch = p_time_stretch
+        self.p_noise = p_noise
+
+    def forward(self, x):
+        batch_size, channels, height, width = x.shape
+        #assert (batch_size, channels, height, width) == (8, 1, 32, 96), "Input size should be (8, 1, 32, 96)"
+        probs = [random.random() for _ in range(4)]
+        #for idx in range(batch_size):
+        #    x[idx] = self.apply_augmentation(x[idx], probs)
+
+        if probs[0] < self.p_time_shift:
+            x = self.time_shift(x)
+        if probs[1] < self.p_freq_shift:
+            x = self.freq_shift(x)
+        if probs[2] < self.p_time_stretch:
+            x = self.time_stretch(x)
+        if probs[3] < self.p_noise:
+            x = self.add_noise(x)
+        x.to(device)
+        return x
+
+    def time_shift(self, x):
+        shift = random.randint(-x.shape[-1] // 10, x.shape[-1] // 10)
+        return torch.roll(x, shifts=shift, dims=-1)
+
+    def freq_shift(self, x):
+        shift = random.randint(-x.shape[-2] // 10, x.shape[-2] // 10)
+        return torch.roll(x, shifts=shift, dims=-2)
+        
+    def time_stretch(self, x):
+        stretch_factor = random.uniform(0.8, 1.2)
+        x = x.unsqueeze(0)
+        x = torchaudio.transforms.TimeStretch(hop_length=None, n_freq=x.shape[-2], fixed_rate=stretch_factor)(x).float()
+        x = x.squeeze(0)
+        return x
+
+    def add_noise(self, x):
+        noise_factor = random.uniform(0.01, 0.1)
+        noise = torch.randn_like(x) * noise_factor
+        return x + noise
 
 
 # ----------------------------
@@ -35,14 +83,6 @@ class TheAudioBotBase(LightningModule):
         self.lr = lr
         self.optimizer_type = optimizer
         self.loss_function = loss_function
-        self.data_augmentation_probabilities = {'time_stretch': 0.2,           # Apply time stretching with 20% probability
-                                                'pitch_shift': 0.3,            # Apply pitch shifting with 30% probability
-                                                'background_noise': 0.1,       # Add background noise with 10% probability
-                                                'spectrogram_rotation': 0.1,   # Rotate the spectrogram with 10% probability
-                                                'spectrogram_flipping': 0.1,   # Flip the spectrogram with 10% probability
-                                                'spectrogram_cropping': 0.2,   # Crop the spectrogram with 20% probability
-                                                'spectrogram_zooming': 0.2     # Zoom the spectrogram with 20% probability
-                                                }
 
     def forward(self, x):
         x = self.conv(x)
@@ -53,34 +93,8 @@ class TheAudioBotBase(LightningModule):
 
     def training_step(self, batch, batch_idx):
         x, y = batch
-
-        # Apply data augmentation with the defined probabilities
-        if random.random() < self.data_augmentation_probabilities['time_stretch']:
-            x = torchaudio.transforms.TimeStretch()(x, rate=random.uniform(0.8, 1.2))
-
-        if random.random() < self.data_augmentation_probabilities['pitch_shift']:
-            x = torchaudio.transforms.PitchShift()(x, sample_rate=44100, n_steps=random.randint(-3, 3))
-
-        if random.random() < self.data_augmentation_probabilities['background_noise']:
-            noise = torch.randn(x.shape)
-            x = x + 0.1 * noise
-
-        if random.random() < self.data_augmentation_probabilities['spectrogram_rotation']:
-            x = torch.rot90(x, random.randint(1, 3), dims=[1, 2])
-
-        if random.random() < self.data_augmentation_probabilities['spectrogram_flipping']:
-            x = torch.flip(x, dims=[2])
-
-        if random.random() < self.data_augmentation_probabilities['spectrogram_cropping']:
-            crop_size = (x.shape[1] // 2, x.shape[2] // 2)
-            i, j = random.randint(0, x.shape[1] - crop_size[0]), random.randint(0, x.shape[2] - crop_size[1])
-            x = x[:, i:i + crop_size[0], j:j + crop_size[1]]
-
-        if random.random() < self.data_augmentation_probabilities['spectrogram_zooming']:
-            zoom_factor = random.uniform(0.8, 1.2)
-            new_size = (int(x.shape[1] * zoom_factor), int(x.shape[2] * zoom_factor))
-            x = torchaudio.transforms.Resize(new_size)(x)
-        
+        augmentation = SpectrogramAugmentation()
+        x = augmentation.forward(x)
         y_hat = self.forward(x)
         loss = self.loss_func(y_hat, y)
         self.log('train_loss', loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
