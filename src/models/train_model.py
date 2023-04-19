@@ -33,11 +33,6 @@ random.seed(PARAMS["seed"])
 torch.manual_seed(PARAMS["seed"])
 np.random.seed(PARAMS["seed"])
 
-if getpass.getuser() == 'denni':
-    wandb.login(key='5b7c4dfaaa3458ff59ee371774798a737933dfa9')
-# else:
-#     print("Not logged in to wandb. Please use your own key.")
-
 
 def train(hparams: Dict[str, Any]) -> None:
     model = TheAudioBotV3(lr=hparams["learning_rate"],
