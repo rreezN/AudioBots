@@ -2,15 +2,37 @@ import pickle
 
 import click
 import torch
+from train_model import PARAMS
 from torch.utils.data import DataLoader, Dataset
+from dataloader import standardiseTransform
 from model import TheAudioBotV3
 from tqdm import tqdm
 import numpy as np
-import sys
-import os
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+from sklearn.metrics import confusion_matrix
 
-sys.path.insert(0, 'C:/Users/kr_mo/OneDrive-DTU/DTU/Andet/Oticon/AudioBots/')
-basedir = 'C:/Users/kr_mo/OneDrive-DTU/DTU/Andet/Oticon/AudioBots/'
+# sys.path.insert(0, 'C:/Users/kr_mo/OneDrive-DTU/DTU/Andet/Oticon/AudioBots/')
+# basedir = 'C:/Users/kr_mo/OneDrive-DTU/DTU/Andet/Oticon/AudioBots/'
+
+def plotConf(predictions, test_labels):
+    confusion = confusion_matrix(predictions, test_labels)
+    labs=['Other', 'Music', 'Human Voice', 'Engine Sounds', 'Alarm']
+    df_cm = pd.DataFrame(confusion, columns=labs, index=labs)
+    df_cm.index.name = 'Actual'
+    df_cm.columns.name = 'Predicted'
+    f, ax = plt.subplots(figsize=(5, 5))
+    # cmap = sns.cubehelix_palette(light=1, as_cmap=True)
+    sns.heatmap(df_cm, cbar=False, annot=True,  square=True, fmt='.0f',
+                annot_kws={'size': 10}, linewidth=.5)
+    ax.xaxis.tick_top()
+    ax.xaxis.set_label_position('top')
+    plt.xticks(rotation=45)
+    plt.yticks(rotation=45)
+    # plt.title('Confusion matrix')
+    plt.tight_layout()
+    plt.show()
 
 
 class dataset(Dataset):
@@ -27,41 +49,49 @@ class dataset(Dataset):
 
 @click.command()
 @click.argument("model_filepath", type=click.Path(exists=True))
-@click.argument("test_filepath", type=click.Path(exists=True))
-def evaluate(model_filepath, test_filepath):
+def evaluate(model_filepath):
     print("Evaluating model")
-
-    # model = timm.create_model(
-    #     params['hyperparameters']['model_name'],
-    #     pretrained=params['hyperparameters']['pretrained'],
-    #     in_chans=params['hyperparameters']['in_chans'],
-    #     num_classes=params['hyperparameters']['num_classes'],
-    # )
-
-    # model.load_state_dict(torch.load(model_filepath))
+    # model = TheAudioBotV3.load_from_checkpoint(model_filepath)
+    # device = "cuda" if torch.cuda.is_available() else "cpu"
+    # model = model.to(device)
+    # trainer = Trainer(devices="auto",accelerator=PARAMS["accelerator"])
+    # data_loader = MyDataModule(batch_dict=PARAMS["batch_dict"], device=PARAMS["accelerator"])
+    # trainer.test(model, datamodule=data_loader)
 
     model = TheAudioBotV3.load_from_checkpoint(model_filepath)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = model.to(device)
     model.eval()
 
-    test_data = torch.unsqueeze(torch.tensor(np.load(os.path.join(basedir, test_filepath, "test.npy")), dtype=torch.float32), 1)
-    test_labels = torch.tensor(np.load(os.path.join(basedir, test_filepath, "test_labels.npy"))).long()
+    train_data = torch.unsqueeze(torch.tensor(np.load("data/processed/training.npy"), dtype=torch.float32), 1)
+    train_labels = torch.tensor(np.load("data/processed/training_labels.npy")).long()
+        
+    mu = torch.mean(train_data, axis=(0,1,3))
+    std = torch.std(train_data, axis=(0,1,3))
+    
+    test_data = torch.unsqueeze(torch.tensor(np.load("data/processed/test.npy"), dtype=torch.float32), 1)
+    test_labels = torch.tensor(np.load("data/processed/test_labels.npy")).long()
 
+    test_data = standardiseTransform(test_data, mu, std)    
     data = dataset(test_data, test_labels)
-    dataloader = DataLoader(data, batch_size=100)
+    
+    dataloader = DataLoader(data, batch_size=1)
 
     correct, total = 0, 0
+    predictions = []
     for batch in tqdm(dataloader):
         x, y = batch
 
         preds = model(x.to(device))
         preds = preds.argmax(dim=-1)
+        predictions += preds.tolist()
 
         correct += (preds == y.to(device)).sum().item()
         total += y.numel()
-
+    
     print(f"Test set accuracy {correct / total}")
+
+    plotConf(predictions, test_labels)
 
 
 if __name__ == "__main__":

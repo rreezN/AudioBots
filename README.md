@@ -3,21 +3,17 @@
 Audio Explorer Challenge 2023
 
 
-[<img src="https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white">](https://www.youtube.com/watch?v=dQw4w9WgXcQ?autoplay=1)
-[<img src="https://img.shields.io/badge/Weights_&_Biases-FFBE00?style=for-the-badge&logo=WeightsAndBiases&logoColor=white">](https://scontent-arn2-2.xx.fbcdn.net/v/t1.15752-9/324219590_702995398045880_3444596723210508741_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=ae9488&_nc_ohc=Ib-CcSC91PUAX-bZQZQ&_nc_ht=scontent-arn2-2.xx&oh=03_AdTxAZGsuouCqphrNQsysFSHP01yAha4iFyapgjLQT7_qA&oe=63E77E24)
-[<img src="https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=blue">](https://i.redd.it/arqzi89s0q9a1.jpg)
-[<img src="https://img.shields.io/badge/PyTorch%20Lightning-792DE4?style=for-the-badge&logo=pytorch-lightning&logoColor=white">](https://miro.medium.com/max/500/1*qHbAsMNmdWQJkzm2SUA-8w.jpeg)
+[<img src="https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white">](https://pytorch.org/)
+[<img src="https://img.shields.io/badge/Weights_&_Biases-FFBE00?style=for-the-badge&logo=WeightsAndBiases&logoColor=white">](https://docs.wandb.ai/guides/sweeps)
+[<img src="https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=blue">](https://www.python.org/)
+[<img src="https://img.shields.io/badge/PyTorch%20Lightning-792DE4?style=for-the-badge&logo=pytorch-lightning&logoColor=white">](https://www.pytorchlightning.ai/index.html)
 
-![example workflow](https://github.com/rreezN/dtu_mlopsproject/actions/workflows/flake8.yml/badge.svg)
-![example workflow](https://github.com/rreezN/dtu_mlopsproject/actions/workflows/isort.yml/badge.svg)
+![example workflow](https://github.com/rreezN/AudioBots/actions/workflows/isort.yml/badge.svg)
 
 
 ### AudioBots consists of:
-Kristian Rhindal Møllmann (194246), Dennis Chenxi Zhuang (s194247), \
-Kristoffer Marboe (s194249) and Kasper Niklas Kjær Hansen (s194267)
-
-
-
+[Dennis Chenxi Zhuang](https://www.linkedin.com/in/dennis-chenxi-zhuang/), [Kasper Niklas Kjær Hansen](https://www.linkedin.com/in/kasper-niklas-hansen-0042a464/) \
+[Kristoffer Marboe](https://www.linkedin.com/in/kristoffer-marboe-b9bab71b1/) and [Kristian Rhindal Møllmann](https://www.linkedin.com/in/kristian-m%C3%B8llmann/)
 
 Project Organization
 ------------
