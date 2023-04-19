@@ -22,18 +22,37 @@ class dataset(Dataset):
 
 
 class MyDataModule(pl.LightningDataModule):
-    def __init__(self, batch_dict, device):
+    def __init__(
+            self,
+            batch_dict,
+            device,
+            train_data=None,
+            train_labels=None,
+            val_data=None,
+            val_labels=None,
+            test_data=None,
+            test_labels=None
+    ):
         super().__init__()
         # batch_dict contains the batch scheduling
         self.batch_dict = batch_dict
         self.current_batch_size = batch_dict[0]
         self.device = "cuda" if device == "gpu" else "cpu"
+        self.init_train_data = train_data
+        self.init_train_labels = train_labels
+        self.init_val_data = val_data
+        self.init_val_labels = val_labels
+        self.init_test_data = test_data
+        self.init_test_labels = test_labels
 
     def setup(self, stage=None):
         # Assign train/val/test datasets for use in dataloaders
 
-        train_data = torch.unsqueeze(torch.tensor(np.load("data/processed/training.npy"), dtype=torch.float32), 1)
-        train_labels = torch.tensor(np.load("data/processed/training_labels.npy")).long()
+        train_data = np.load("data/processed/training.npy") if self.init_train_data is None else self.init_train_data
+        train_labels = np.load("data/processed/training_labels.npy") if self.init_train_data is None else self.init_train_labels
+
+        train_data = torch.unsqueeze(torch.tensor(train_data, dtype=torch.float32), 1)
+        train_labels = torch.tensor(train_labels).long()
         
         # Standardisation parameters
         mu = torch.mean(train_data, axis=(0,1,3))
@@ -44,16 +63,22 @@ class MyDataModule(pl.LightningDataModule):
         self.train_data = dataset(train_data, train_labels)
 
         # Standardise val data
+        val_data = np.load("data/processed/val.npy") if self.init_val_data is None else self.init_val_data
+        val_labels = np.load("data/processed/val_labels.npy") if self.init_val_data is None else self.init_val_labels
+
         val_data = torch.unsqueeze(
-            torch.tensor(np.load("data/processed/val.npy"), dtype=torch.float32), 1)
-        val_labels = torch.tensor(np.load("data/processed/val_labels.npy")).long()
+            torch.tensor(val_data, dtype=torch.float32), 1)
+        val_labels = torch.tensor(val_labels).long()
         val_data = standardiseTransform(val_data, mu, std)
         self.val_data = dataset(val_data, val_labels.long())
 
         # Standardise test data
+        test_data = np.load("data/processed/test.npy") if self.init_test_data is None else self.init_test_data
+        test_labels = np.load("data/processed/test_labels.npy") if self.init_test_data is None else self.init_test_labels
+
         test_data = torch.unsqueeze(
-            torch.tensor(np.load("data/processed/test.npy"), dtype=torch.float32), 1)
-        test_labels = torch.tensor(np.load("data/processed/test_labels.npy")).long()
+            torch.tensor(test_data, dtype=torch.float32), 1)
+        test_labels = torch.tensor(test_labels).long()
         test_data = standardiseTransform(test_data, mu, std)
         self.test_data = dataset(test_data, test_labels.long())
 
