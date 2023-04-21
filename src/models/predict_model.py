@@ -12,19 +12,20 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 from sklearn.metrics import confusion_matrix
-
+from torchsummary import summary
 # sys.path.insert(0, 'C:/Users/kr_mo/OneDrive-DTU/DTU/Andet/Oticon/AudioBots/')
 # basedir = 'C:/Users/kr_mo/OneDrive-DTU/DTU/Andet/Oticon/AudioBots/'
 
 def plotConf(predictions, test_labels):
-    confusion = confusion_matrix(predictions, test_labels)
+    cm = confusion_matrix(predictions, test_labels)
+    confusion = (cm.astype('float') / cm.sum(axis=1)[:, np.newaxis])*100
     labs=['Other', 'Music', 'Human Voice', 'Engine Sounds', 'Alarm']
     df_cm = pd.DataFrame(confusion, columns=labs, index=labs)
     df_cm.index.name = 'Actual'
     df_cm.columns.name = 'Predicted'
     f, ax = plt.subplots(figsize=(5, 5))
     # cmap = sns.cubehelix_palette(light=1, as_cmap=True)
-    sns.heatmap(df_cm, cbar=False, annot=True,  square=True, fmt='.0f',
+    sns.heatmap(df_cm, cbar=False, annot=True,  square=True, fmt='.2f',
                 annot_kws={'size': 10}, linewidth=.5)
     ax.xaxis.tick_top()
     ax.xaxis.set_label_position('top')
@@ -62,6 +63,9 @@ def evaluate(model_filepath):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = model.to(device)
     model.eval()
+    
+    print(summary(model, (1, 32, 96)))
+
 
     train_data = torch.unsqueeze(torch.tensor(np.load("data/processed/training.npy"), dtype=torch.float32), 1)
     train_labels = torch.tensor(np.load("data/processed/training_labels.npy")).long()
