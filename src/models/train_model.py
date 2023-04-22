@@ -26,7 +26,10 @@ PARAMS = {
                    36: 96,
                    48: 128},
     "accelerator": "gpu" if torch.cuda.is_available() else "cpu",
-    "limit_train_batches": 1.0
+    "limit_train_batches": 1.0,
+    "optimizer": "adam",
+    "loss_function": "cross_entropy",
+    "activation_function": "LeakyReLU"
 }
 
 random.seed(PARAMS["seed"])
@@ -36,9 +39,9 @@ np.random.seed(PARAMS["seed"])
 
 def train(hparams: Dict[str, Any]) -> None:
     model = TheAudioBotV3(lr=hparams["learning_rate"],
-                          optimizer=hparams["optimizer"],
-                          loss_function=hparams["loss_function"],
-                          activation_function=hparams["activation_function"],
+                          optimizer=PARAMS["optimizer"],
+                          loss_function=PARAMS["loss_function"],
+                          activation_function=PARAMS["activation_function"],
                           dropout=hparams["dropout"])
 
     checkpoint_callback = ModelCheckpoint(
