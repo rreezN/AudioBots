@@ -450,7 +450,7 @@ class TheAudioBotMiniV2(TheAudioBotBase):
 
 if __name__ == "__main__":
     # Create the model and put it on the GPU if available
-    myModel = TheAudioBotV3()
+    myModel = TheAudioBotMiniV2()
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     myModel = myModel.to(device)
     # Check that it is on Cuda

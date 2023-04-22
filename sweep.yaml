@@ -5,8 +5,16 @@ metric:
   goal: maximize
 parameters:
     learning_rate:
+<<<<<<< Updated upstream
       min: 0.0003
       max: 0.001
     dropout:
       min: 0.0
       max: 0.1
+=======
+        min: 0.00085
+        max: 0.003
+    dropout:
+        min: 0.01
+        max: 0.03
+>>>>>>> Stashed changes
