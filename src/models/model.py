@@ -1,10 +1,13 @@
 import torch.nn.functional as F
 from pytorch_lightning import LightningModule
+from torchsummary import summary
 from focal_loss import FocalLoss
 import torch.nn as nn
 import torch
 import random
 import torchaudio
+import torchprofile
+
 
 # Load the model
 focal_loss = FocalLoss(
@@ -309,6 +312,142 @@ class TheAudioBotV3(TheAudioBotBase):
             raise ValueError("Activation function not implemented.")
 
 
+class TheAudioBotMini(TheAudioBotBase):
+    def __init__(self,
+                 lr: float = 1e-3,
+                 optimizer: str = "adam",
+                 loss_function: str = "cross_entropy",
+                 activation_function: str = "ReLU",
+                 dropout: float = 0.1):
+        super().__init__(lr=lr, optimizer=optimizer, loss_function=loss_function)
+        self.activation_function = activation_function
+        self.dropout = dropout
+
+        conv_layers = []
+
+        # First Convolution Block with Relu and Batch Norm. Use Kaiming Initialization
+        self.conv1 = nn.Conv2d(1, 8, kernel_size=(5, 5), stride=(2, 2), padding=(2, 2))
+        self.relu1 = self.activation_func()
+        self.bn1 = nn.BatchNorm2d(8)
+        self.drop1 = torch.nn.Dropout2d(p=self.dropout)
+        nn.init.kaiming_normal_(self.conv1.weight, a=0.1)
+        self.conv1.bias.data.zero_()
+        conv_layers += [self.conv1, self.relu1, self.bn1, self.drop1]
+
+        # Second Convolution Block
+        self.conv2 = nn.Conv2d(8, 16, kernel_size=(5, 5), stride=(2, 2), padding=(2, 2))
+        self.relu2 = self.activation_func()
+        self.bn2 = nn.BatchNorm2d(16)
+        self.drop2 = torch.nn.Dropout2d(p=self.dropout)
+        nn.init.kaiming_normal_(self.conv2.weight, a=0.1)
+        self.conv2.bias.data.zero_()
+        conv_layers += [self.conv2, self.relu2, self.bn2, self.drop2]
+
+        # Third Convolution Block
+        self.conv3 = nn.Conv2d(16, 32, kernel_size=(5, 5), stride=(2, 2), padding=(2, 2))
+        self.relu3 = self.activation_func()
+        self.bn3 = nn.BatchNorm2d(32)
+        self.drop3 = torch.nn.Dropout2d(p=self.dropout)
+        nn.init.kaiming_normal_(self.conv3.weight, a=0.1)
+        self.conv3.bias.data.zero_()
+        conv_layers += [self.conv3, self.relu3, self.bn3, self.drop3]
+
+        # Fourth Convolution Block
+        self.conv4 = nn.Conv2d(32, 64, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+        self.relu4 = self.activation_func()
+        self.bn4 = nn.BatchNorm2d(64)
+        self.drop4 = torch.nn.Dropout2d(p=self.dropout)
+        nn.init.kaiming_normal_(self.conv4.weight, a=0.1)
+        self.conv4.bias.data.zero_()
+        conv_layers += [self.conv4, self.relu4,  self.bn4, self.drop4]
+
+
+        # Linear Classifier
+        self.ap = nn.AdaptiveAvgPool2d(output_size=1)
+        self.lin = nn.Sequential(nn.Linear(in_features=64, out_features=128),
+                                 nn.ReLU(),
+                                 nn.Linear(in_features=128, out_features=64),
+                                 nn.ReLU(),
+                                 nn.Linear(in_features=64, out_features=5))
+
+        # Wrap the Convolutional Blocks
+        self.conv = nn.Sequential(*conv_layers)
+
+    def activation_func(self):
+        if self.activation_function == "ReLU":
+            return nn.ReLU()
+        elif self.activation_function == "LeakyReLU":
+            return nn.LeakyReLU()
+        elif self.activation_function == "ELU":
+            return nn.ELU()
+        else:
+            raise ValueError("Activation function not implemented.")
+
+
+class TheAudioBotMiniV2(TheAudioBotBase):
+    def __init__(self,
+                 lr: float = 1e-3,
+                 optimizer: str = "adam",
+                 loss_function: str = "cross_entropy",
+                 activation_function: str = "ReLU",
+                 dropout: float = 0.1):
+        super().__init__(lr=lr, optimizer=optimizer, loss_function=loss_function)
+        self.activation_function = activation_function
+        self.dropout = dropout
+
+        conv_layers = []
+
+        # First Convolution Block with Relu and Batch Norm. Use Kaiming Initialization
+        self.conv1 = nn.Conv2d(1, 24, kernel_size=(5, 5), stride=(2, 2), padding=(2, 2))
+        self.relu1 = self.activation_func()
+        self.bn1 = nn.BatchNorm2d(24)
+        self.drop1 = torch.nn.Dropout2d(p=self.dropout)
+        nn.init.kaiming_normal_(self.conv1.weight, a=0.1)
+        self.conv1.bias.data.zero_()
+        conv_layers += [self.conv1, self.relu1, self.bn1, self.drop1]
+
+        # Second Convolution Block
+        self.conv2 = nn.Conv2d(24, 48, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+        self.relu2 = self.activation_func()
+        self.bn2 = nn.BatchNorm2d(48)
+        self.drop2 = torch.nn.Dropout2d(p=self.dropout)
+        nn.init.kaiming_normal_(self.conv2.weight, a=0.1)
+        self.conv2.bias.data.zero_()
+        conv_layers += [self.conv2, self.relu2, self.bn2, self.drop2]
+
+        # Third Convolution Block
+        self.conv4 = nn.Conv2d(48, 64, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+        self.relu4 = self.activation_func()
+        self.bn4 = nn.BatchNorm2d(64)
+        self.drop4 = torch.nn.Dropout2d(p=self.dropout)
+        nn.init.kaiming_normal_(self.conv4.weight, a=0.1)
+        self.conv4.bias.data.zero_()
+        conv_layers += [self.conv4, self.relu4,  self.bn4, self.drop4]
+
+
+        # Linear Classifier
+        self.ap = nn.AdaptiveAvgPool2d(output_size=1)
+        self.lin = nn.Sequential(nn.Linear(in_features=64, out_features=80),
+                                 nn.ReLU(),
+                                 nn.Linear(in_features=80, out_features=64),
+                                 nn.ReLU(),
+                                 nn.Linear(in_features=64, out_features=5))
+
+        # Wrap the Convolutional Blocks
+        self.conv = nn.Sequential(*conv_layers)
+
+    def activation_func(self):
+        if self.activation_function == "ReLU":
+            return nn.ReLU()
+        elif self.activation_function == "LeakyReLU":
+            return nn.LeakyReLU()
+        elif self.activation_function == "ELU":
+            return nn.ELU()
+        else:
+            raise ValueError("Activation function not implemented.")
+
+
+
 if __name__ == "__main__":
     # Create the model and put it on the GPU if available
     myModel = TheAudioBotV3()
@@ -316,12 +455,18 @@ if __name__ == "__main__":
     myModel = myModel.to(device)
     # Check that it is on Cuda
     next(myModel.parameters()).device
+    print("Model Summary")
+    summary(myModel, (1, 32, 96))
+    inputs = torch.randn(1, 1, 32, 96)
 
-    print('** Model architecture: ')
-    print(myModel)
-    print('\n** Learnable parameters in layers: ')
-    nr_parameters = 0
-    for p in myModel.parameters():
-        print(p.shape)
-        nr_parameters += p.numel()
-    print(f'\n** In total: {nr_parameters} parameters')
+    macs = torchprofile.profile_macs(myModel, inputs)
+    print(f"GMACs: {macs/1e6}")
+
+    # print('** Model architecture: ')
+    # print(myModel)
+    # print('\n** Learnable parameters in layers: ')
+    # nr_parameters = 0
+    # for p in myModel.parameters():
+    #     print(p.shape)
+    #     nr_parameters += p.numel()
+    # print(f'\n** In total: {nr_parameters} parameters')

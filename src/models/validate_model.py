@@ -4,7 +4,7 @@ import wandb
 
 from model import TheAudioBotV3
 from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
+from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint, TQDMProgressBar
 from dataloader import MyDataModule
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
@@ -75,8 +75,8 @@ def train(data_loader) -> None:
         accelerator=PARAMS["accelerator"],
         max_epochs=PARAMS["num_epochs"],
         limit_train_batches=PARAMS["limit_train_batches"],
-        log_every_n_steps=1,
-        callbacks=[checkpoint_callback, early_stopping_callback],
+        log_every_n_steps=500,
+        callbacks=[checkpoint_callback, early_stopping_callback, TQDMProgressBar(refresh_rate=500)],
         reload_dataloaders_every_n_epochs=1,
         logger=wandb_logger
     )
