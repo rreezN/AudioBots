@@ -4,7 +4,7 @@ import wandb
 
 from model import TheAudioBotV3
 from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
+from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint, TQDMProgressBar
 from dataloader import MyDataModule
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
@@ -14,9 +14,9 @@ from pytorch_lightning.loggers import WandbLogger
 
 PARAMS = {
     "model_name": "TheAudioBotV3",
-    "project_name": "TeSt Of BeSt MoDel YeS",
+    "project_name": "TeSt Of BeSt MoDel YeS V2",
     "seed": 11,
-    "num_epochs": 4,
+    "num_epochs": 150,
     "patience": 30,
     "batch_dict": {0: 8,
                    4: 16,
@@ -27,12 +27,12 @@ PARAMS = {
                    36: 96,
                    48: 128},
     "accelerator": "gpu" if torch.cuda.is_available() else "cpu",
-    "limit_train_batches": 0.1,
+    "limit_train_batches": 1.0,
     "learning_rate": 0.00065,
     "optimizer": "adam",
     "loss_function": "cross_entropy",
-    "activation_function": "LeakyReLU",
-    "dropout": 0.09
+    "activation_function": "ReLU",
+    "dropout": 0.08
 }
 
 random.seed(PARAMS["seed"])
@@ -75,8 +75,8 @@ def train(data_loader) -> None:
         accelerator=PARAMS["accelerator"],
         max_epochs=PARAMS["num_epochs"],
         limit_train_batches=PARAMS["limit_train_batches"],
-        log_every_n_steps=1,
-        callbacks=[checkpoint_callback, early_stopping_callback],
+        log_every_n_steps=500,
+        callbacks=[checkpoint_callback, early_stopping_callback, TQDMProgressBar(refresh_rate=500)],
         reload_dataloaders_every_n_epochs=1,
         logger=wandb_logger
     )
@@ -113,6 +113,7 @@ def validate(n_folds: int = 10) -> None:
             test_labels=test_labels
         )
         train(data_loader)
+
 
 if __name__ == "__main__":
     validate(10)
