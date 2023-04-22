@@ -99,10 +99,10 @@ def train_sweep() -> None:
 
 
 if __name__ == "__main__":
-    train_sweep()
-    # hparams = {"learning_rate": 1e-3,
-    #            "optimizer": "adam",
-    #            "loss_function": "cross_entropy",
-    #            "activation_function": "ReLU",
-    #            "dropout": 0.3}
-    # train(hparams)
+    # train_sweep()
+    hparams = {"learning_rate": 1e-3,
+               "optimizer": "adam",
+               "loss_function": "cross_entropy",
+               "activation_function": "ReLU",
+               "dropout": 0.3}
+    train(hparams)
