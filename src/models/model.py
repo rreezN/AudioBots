@@ -294,7 +294,7 @@ class TheAudioBotV3(TheAudioBotBase):
                                  nn.Linear(in_features=200, out_features=128),
                                  nn.ReLU(),
                                  nn.Linear(in_features=128, out_features=5))
-
+        
         # Wrap the Convolutional Blocks
         self.conv = nn.Sequential(*conv_layers)
 

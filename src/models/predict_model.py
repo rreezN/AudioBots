@@ -12,6 +12,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import train_test_split
+from pytorch_lightning import Trainer
+from dataloader import MyDataModule
+
 from torchsummary import summary
 # sys.path.insert(0, 'C:/Users/kr_mo/OneDrive-DTU/DTU/Andet/Oticon/AudioBots/')
 # basedir = 'C:/Users/kr_mo/OneDrive-DTU/DTU/Andet/Oticon/AudioBots/'
@@ -56,7 +60,17 @@ def evaluate(model_filepath):
     # device = "cuda" if torch.cuda.is_available() else "cpu"
     # model = model.to(device)
     # trainer = Trainer(devices="auto",accelerator=PARAMS["accelerator"])
-    # data_loader = MyDataModule(batch_dict=PARAMS["batch_dict"], device=PARAMS["accelerator"])
+
+    # data = np.load("data/raw/training.npy")
+    # labels = np.load("data/raw/training_labels.npy")
+
+    # train_data_temp, test_data, train_labels_temp, test_labels = train_test_split(data, labels, test_size=0.1,
+    #                                                                               random_state=11, shuffle=True)
+
+    # data_loader = MyDataModule(batch_dict=PARAMS["batch_dict"], device=PARAMS["accelerator"], 
+    #                            train_data=train_data_temp, train_labels=train_labels_temp, 
+    #                            test_data=test_data, test_labels=test_labels)
+    
     # trainer.test(model, datamodule=data_loader)
 
     model = TheAudioBotV3.load_from_checkpoint(model_filepath)
@@ -64,17 +78,22 @@ def evaluate(model_filepath):
     model = model.to(device)
     model.eval()
     
-    print(summary(model, (1, 32, 96)))
+    print(summary(model, (1, 32, 96)))        
 
-
-    train_data = torch.unsqueeze(torch.tensor(np.load("data/processed/training.npy"), dtype=torch.float32), 1)
-    train_labels = torch.tensor(np.load("data/processed/training_labels.npy")).long()
-        
-    mu = torch.mean(train_data, axis=(0,1,3))
-    std = torch.std(train_data, axis=(0,1,3))
     
-    test_data = torch.unsqueeze(torch.tensor(np.load("data/processed/test.npy"), dtype=torch.float32), 1)
-    test_labels = torch.tensor(np.load("data/processed/test_labels.npy")).long()
+    data = np.load("data/raw/training.npy")
+    labels = np.load("data/raw/training_labels.npy")
+
+    train_data_temp, test_data, train_labels_temp, test_labels = train_test_split(data, labels, test_size=0.1,
+                                                                                  random_state=11, shuffle=True)
+
+    train_data_temp = torch.unsqueeze(torch.tensor(train_data_temp, dtype=torch.float32), 1)
+    test_data = torch.unsqueeze(torch.tensor(test_data, dtype=torch.float32), 1)
+    train_labels_temp = torch.tensor(train_labels_temp).long()
+    test_labels = torch.tensor(test_labels).long()
+    
+    mu = torch.mean(train_data_temp, axis=(0,1,3))
+    std = torch.std(train_data_temp, axis=(0,1,3))
 
     test_data = standardiseTransform(test_data, mu, std)    
     data = dataset(test_data, test_labels)
