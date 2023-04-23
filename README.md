@@ -2,7 +2,7 @@
 
 Audio Explorer Challenge 2023
 <p align="center">
-  <img align="right" src="https://raw.githubusercontent.com/rreezN/AudioBots/main/abstract_pencil_2.png" alt="drawing" width="300"/>
+  <img align="right" src="https://raw.githubusercontent.com/rreezN/AudioBots/main/abstract_pencil_2.png" alt="drawing" width="350"/>
 </p>
 
 [<img src="https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white">](https://pytorch.org/)
