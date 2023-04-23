@@ -64,7 +64,11 @@ def plot_means(data, labels, cats, save_plot=False):
             ax = plt.subplot(gs[c, r])
             ax.set_xlim(0, 2)
             img = librosa.display.specshow(mel_spectrogram, y_axis='mel', x_axis='time', cmap='viridis', ax=ax)
-            ax.set_title(f'Spectrogram {cats[mean_nr]}')
+
+            if c+r == 3:
+                ax.set_title(f'Mean mel-spectrogram of all the 52890 spectrograms')
+            else:
+                ax.set_title(f'Mean mel-spectrogram of all the {sounds[mean_nr]} {cats[mean_nr]} spectrograms ')
             axes.append(ax)
 
             # Add row title
@@ -93,7 +97,7 @@ def plot_means(data, labels, cats, save_plot=False):
     fig.colorbar(img, cax=cbar_ax, format='%+2.0f dB')
 
     # Adding the overall title
-    fig.suptitle("The mean spectrogram of each of the categories", fontsize=24)
+    # fig.suptitle("The mean spectrogram of each of the categories", fontsize=24)
     plt.subplots_adjust(top=0.92)
     if save_plot:
         plt.savefig("mean_mel_spectrograms.pdf", bbox_inches="tight")
@@ -159,18 +163,72 @@ def get_5x5(data, labels, cats, save_plot=False):
     plt.show()
 
 
+def get_3x5(data, labels, cats, save_plot=False):
+    nrows, ncols = 3, 5
+    fig = plt.figure(figsize=(12, 4))
+    gs = gridspec.GridSpec(nrows, ncols + 1, width_ratios=[1] * ncols + [0.1])
+    gs.update(wspace=0.2, hspace=0.2)
+
+    axes = []
+
+    the_specs = [7, 0, 3, 22, 66, 16, 2, 46, 26, 166, 17, 5, 61, 39, 168]
+    i = 0
+    for r in range(nrows):
+        for c in range(ncols):
+            mel_spectrogram = data[the_specs[i]]
+            # Plotting the mel-spectrogram
+            ax = plt.subplot(gs[r, c])
+            ax.set_xlim(0, 2)
+
+            img = librosa.display.specshow(mel_spectrogram, y_axis='mel', x_axis='time', cmap='viridis', ax=ax)
+
+            # Remove y-axis tick labels for all but the left-most plots
+            if c > 0:
+                ax.set_ylabel('')
+                ax.set_yticklabels([])
+            else:
+                ax.set_ylabel('Frequency [Hz]')
+
+            # Remove x-axis tick labels for all but the bottom plots
+            if r < nrows - 1:
+                ax.set_xlabel('')
+                ax.set_xticklabels([])
+            else:
+                ax.set_xlabel('Time [s]')
+
+            # Add column titles for the first row
+            if r == 0:
+                ax.set_title(cats[c], fontsize=12)
+
+            i = i + 1
+        axes.append(ax)
+
+    # Adding a colorbar
+    cbar_ax = plt.subplot(gs[:, -1])
+    fig.colorbar(img, cax=cbar_ax, format='%+2.0f dB')
+
+    plt.subplots_adjust(top=0.92)
+    if save_plot:
+        plt.savefig("mel_spectrograms_3_5.pdf", bbox_inches="tight")
+    plt.show()
+
+
 def plot_distributions(data, labels, cats):
 
     # Flatten the data array
     flattened_data = data.ravel()
 
+    plt.style.use('seaborn-darkgrid')
+
     # Create the histogram
-    plt.hist(flattened_data, bins=np.arange(-80, 1, 1), alpha=0.7, edgecolor='black')
+    plt.hist(flattened_data, bins=np.arange(-80, 1, 1), alpha=0.7, edgecolor='black', linewidth=0.5, color='steelblue')
+
 
     # Add labels and title
     plt.xlabel('Value')
     plt.ylabel('Frequency')
-    plt.title('Distribution of Values in Data Array')
+    plt.savefig("mel_spectrograms_distribution.pdf", bbox_inches="tight")
+    plt.title('Distribution of values in the spectrograms')
 
     # Show the plot
     plt.show()
@@ -199,6 +257,7 @@ def plot_distributions(data, labels, cats):
         # Flatten the data array
         flattened_data = class_data[i].ravel()
 
+
         # Create the histogram
         plt.hist(flattened_data, bins=np.arange(-80, 1, 1), alpha=0.7, edgecolor='black')
 
@@ -211,6 +270,78 @@ def plot_distributions(data, labels, cats):
         plt.show()
 
 
+def count_80s(data, labels, cats):
+
+    data_r = data.round()
+
+    other_80s = []
+    music_80s = []
+    human_voice_80s = []
+    engine_sounds_80s = []
+    alarm_80s = []
+
+    class_80s = [other_80s, music_80s, human_voice_80s, engine_sounds_80s, alarm_80s]
+
+    for i in range(len(data_r)):
+        count = np.count_nonzero(data_r[i] == -80)
+        if count != 0:
+            class_80s[labels[i]].append(count)
+
+    for i in range(len(class_80s)):
+
+        # Create the histogram
+        plt.hist(class_80s[i], bins=100, alpha=0.7, edgecolor='black')
+
+        # Add labels and title
+        plt.xlabel('Value')
+        plt.ylabel('Frequency')
+        plt.title(f'Distribution of {cats[i]} values')
+
+        # Show the plot
+        plt.show()
+
+    # Set the number of bins for the histograms
+    num_bins = 50
+
+    # Create subplots with 2 rows and 3 columns
+    n_rows = 2
+    n_cols = 3
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(12, 6), sharex=True, sharey=True)
+
+    # Flatten the axes array for easier indexing
+    flat_axes = axes.flatten()
+
+    # Create the histograms
+    flat_axes[0].hist(class_80s[0], bins=num_bins)
+    flat_axes[0].set_title('Data 1')
+
+    flat_axes[1].hist(class_80s[1], bins=num_bins)
+    flat_axes[1].set_title('Data 2')
+
+    flat_axes[2].hist(class_80s[2], bins=num_bins)
+    flat_axes[2].set_title('Data 3')
+
+    flat_axes[3].hist(class_80s[3], bins=num_bins)
+    flat_axes[3].set_title('Data 4')
+
+    flat_axes[4].hist(class_80s[4], bins=num_bins)
+    flat_axes[4].set_title('Data 5')
+
+    # Remove the last (empty) subplot
+    fig.delaxes(flat_axes[5])
+
+    # Set global labels and title
+    fig.text(0.5, 0.04, 'Value', ha='center')
+    fig.text(0.04, 0.5, 'Frequency', va='center', rotation='vertical')
+    fig.suptitle('Histograms of 5 Datasets')
+
+    # Adjust the layout for better appearance
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.9)
+
+    # Display the plot
+    plt.show()
+
 if __name__ == '__main__':
     D = np.load("training.npy")
     L = np.load("training_labels.npy")
@@ -218,4 +349,6 @@ if __name__ == '__main__':
 
     plot_means(D, L, C, save_plot=False)
     get_5x5(D, L, C, save_plot=False)
+    get_3x5(D, L, C, save_plot=False)
     plot_distributions(D, L, C)
+    count_80s(D, L, C)
