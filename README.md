@@ -13,7 +13,7 @@ Audio Explorer Challenge 2023
 This is the GitHub for the Audio Explorers Electrical Challenge 1 "Sound scene classifier for hearing aids" created by Team AudioBots
 
 <p align="center">
-  <img align="right" src="https://raw.githubusercontent.com/rreezN/AudioBots/main/abstract_pencil_2.png" alt="drawing" width="300"/>
+  <img align="right" src="https://raw.githubusercontent.com/rreezN/AudioBots/main/abstract_pencil_2.png" alt="drawing" width="400"/>
 </p>
 
 ### AudioBots consists of:
