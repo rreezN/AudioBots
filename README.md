@@ -1,7 +1,9 @@
 # AudioBots
 
 Audio Explorer Challenge 2023
-
+<p align="center">
+  <img align="right" src="https://raw.githubusercontent.com/rreezN/AudioBots/main/abstract_pencil_2.png" alt="drawing" width="300"/>
+</p>
 
 [<img src="https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white">](https://pytorch.org/)
 [<img src="https://img.shields.io/badge/Weights_&_Biases-FFBE00?style=for-the-badge&logo=WeightsAndBiases&logoColor=white">](https://docs.wandb.ai/guides/sweeps)
@@ -10,11 +12,8 @@ Audio Explorer Challenge 2023
 
 ![example workflow](https://github.com/rreezN/AudioBots/actions/workflows/isort.yml/badge.svg)
 
-This is the GitHub for the Audio Explorers Electrical Challenge 1 "Sound scene classifier for hearing aids" created by Team AudioBots
 
-<p align="center">
-  <img align="right" src="https://raw.githubusercontent.com/rreezN/AudioBots/main/abstract_pencil_2.png" alt="drawing" width="400"/>
-</p>
+This is the GitHub for the Audio Explorers Electrical Challenge 1 "Sound scene classifier for hearing aids" created by Team AudioBots
 
 ### AudioBots consists of:
 [Dennis Chenxi Zhuang](https://www.linkedin.com/in/dennis-chenxi-zhuang/) \
