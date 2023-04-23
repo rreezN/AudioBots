@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import wandb
 
-from model import TheAudioBotV3
+from model import TheAudioBotV3, TheAudioBotMiniV2
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint, TQDMProgressBar
 from dataloader import MyDataModule
@@ -13,8 +13,13 @@ import random
 from pytorch_lightning.loggers import WandbLogger
 
 PARAMS = {
+<<<<<<< Updated upstream
     "model_name": "TheAudioBotV3",
     "project_name": "TeSt Of BeSt MoDel YeS V2",
+=======
+    "model_name": "TheAudioBotMiniV2",
+    "project_name": "Test of best mini model",
+>>>>>>> Stashed changes
     "seed": 11,
     "num_epochs": 150,
     "patience": 30,
@@ -28,11 +33,16 @@ PARAMS = {
                    48: 128},
     "accelerator": "gpu" if torch.cuda.is_available() else "cpu",
     "limit_train_batches": 1.0,
-    "learning_rate": 0.00065,
+    "learning_rate": 0.0021,
     "optimizer": "adam",
     "loss_function": "cross_entropy",
+<<<<<<< Updated upstream
     "activation_function": "ReLU",
     "dropout": 0.08
+=======
+    "activation_function": "LeakyReLU",
+    "dropout": 0.026
+>>>>>>> Stashed changes
 }
 
 random.seed(PARAMS["seed"])
@@ -41,7 +51,7 @@ np.random.seed(PARAMS["seed"])
 
 
 def train(data_loader) -> None:
-    model = TheAudioBotV3(lr=PARAMS["learning_rate"],
+    model = TheAudioBotMiniV2(lr=PARAMS["learning_rate"],
                           optimizer=PARAMS["optimizer"],
                           loss_function=PARAMS["loss_function"],
                           activation_function=PARAMS["activation_function"],
