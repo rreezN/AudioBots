@@ -24,3 +24,5 @@ This is the GitHub for the Audio Explorers Electrical Challenge 1 "Sound scene c
 
 #### Abstract
 With the need for accurate and effective methods for embedded devices such as hearing aids, interest has been sparked in the field of audio classification. This paper seeks to provide a journal of how audio classification using mel-spectrograms can be done using machine learning. Our CNN-based model proves to get an accuracy of $95.3\%$ using 0.5M parameters, making it feasible to run on low-power devices. We discuss our predictions based on a confusion matrix, consider the further process and propose methods for further research.
+
+The full report is named "AudioBots.pdf" and can be found in the main folder.
